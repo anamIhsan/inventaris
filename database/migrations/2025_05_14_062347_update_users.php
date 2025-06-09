@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->string('photo',200);
-            $table->enum('level', ['Administrator', 'Manajemen']);
+            $table->enum('level', ['Administrator', 'Manajemen', 'User'])->default('User');
         });
     }
 

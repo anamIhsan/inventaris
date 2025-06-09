@@ -22,7 +22,7 @@
                     <div class="alert alert-danger">
                         <ul>
                             @foreach ($errors->all() as $error)
-                                <li>{{$error}}</li>
+                                <li>{{ $error }}</li>
                             @endforeach
                         </ul>
                     </div>
@@ -30,11 +30,11 @@
 
                 @if (session('success'))
                     <div class="alert alert-success">
-                        <b>Success!</b> : {{session('success')}}
+                        <b>Success!</b> : {{ session('success') }}
                     </div>
                 @endif
-                
-                <form action="{{route('auth.login')}}" method="post">
+
+                <form action="{{ route('auth.login') }}" method="post">
                     @csrf
                     <div class="input-group mb-3">
                         <input type="email" name="email" class="form-control" placeholder="Email" required>

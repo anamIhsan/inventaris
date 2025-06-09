@@ -16,13 +16,6 @@
                         <form action="{{ route('borrowing.create') }}" method="post" enctype="multipart/form-data">
                             @csrf
                             <div class="card-body">
-
-                                <div class="form-group">
-                                    <label for="nameInput">Nama Peminjam</label>
-                                    <input type="text" name="name" class="form-control" id="nameInput"
-                                        placeholder="Masukkan nama peminjam..." value="{{ old('name') }}">
-                                </div>
-
                                 <div class="form-group">
                                     <label for="itemIdInput">Barang</label>
                                     <select name="item_id" class="form-control" id="itemIdInput">
@@ -61,9 +54,14 @@
                                 </div>
 
                                 <div class="form-group">
+                                    <label for="catatanInput">Catatan Tambahan</label>
+                                    <textarea name="catatan" class="form-control" id="catatanInput" placeholder="Masukan Catatan..." rows="5">{{ old('catatan') }}</textarea>
+                                </div>
+
+                                <div class="form-group">
                                     <label for="statusInput">Status</label>
-                                    <input type="text" class="form-control" value="Dipinjam" disabled>
-                                    <input type="hidden" name="status" value="dipinjam">
+                                    <input type="text" class="form-control" value="Diminta" disabled>
+                                    <input type="hidden" name="status" value="diminta">
                                 </div>
 
                             </div>

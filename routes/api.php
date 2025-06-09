@@ -1,10 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BorrowingController;
-use App\Http\Controllers\Api\ExitItemController;
-use App\Http\Controllers\Api\IncomingItemController;
 use App\Http\Controllers\Api\ItemController;
-use App\Http\Controllers\Api\SupplierController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -19,24 +17,30 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//     return $request->user();
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register']);
+
+Route::middleware('auth:api')->group(function () {
+    Route::get('/borrowing', [BorrowingController::class, 'index']);
+    Route::get('/borrowing/{id}', [BorrowingController::class, 'show']);
+    Route::post('/borrowing', [BorrowingController::class, 'store']);
+
+    Route::get('/item', [ItemController::class, 'index']);
+    Route::get('/item/{id}', [ItemController::class, 'show']);
+
+    Route::post('/logout', [AuthController::class, 'logout']);
+});
+
+
+// Route::prefix('auth')->group(function () {
+//     Route::post('/register', [AuthControllerApi::class, 'register']);
+//     Route::post('/login', [AuthControllerApi::class, 'login']);
+
+
+//     Route::middleware(['auth:api', 'role:User'])->group(function () {
+//         Route::get('/profile', [AuthControllerApi::class, 'me']);
+//         Route::post('/logout', [AuthControllerApi::class, 'logout']);
+//         Route::get('/dashboard', [DashboardController::class, 'index']);
+//     });
 // });
-
-
-
-Route::get('/supplier', [SupplierController::class, 'index']);
-Route::get('/supplier/{id}', [SupplierController::class, 'show']);
-
-Route::get('/item', [ItemController::class, 'index']);
-Route::get('/item/{id}', [ItemController::class, 'show']);
-
-Route::get('/incoming-item', [IncomingItemController::class, 'index']);
-Route::get('/incoming-item/{id}', [IncomingItemController::class, 'show']);
-
-Route::get('/exit-item', [ExitItemController::class, 'index']);
-Route::get('/exit-item/{id}', [ExitItemController::class, 'show']);
-
-Route::get('/borrowing', [BorrowingController::class, 'index']);
-Route::get('/borrowing/{id}', [BorrowingController::class, 'show']);
 

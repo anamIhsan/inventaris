@@ -44,6 +44,9 @@
                                             <option value="Manajemen"
                                                 {{ old('level', $user->level) == 'Manajemen' ? 'selected' : '' }}>Manajemen
                                             </option>
+                                            <option value="User"
+                                                {{ old('level', $user->level) == 'User' ? 'selected' : '' }}>User
+                                            </option>
                                         </select>
                                     </div>
                                     <div class="col-md-6 mb-3 text-start">

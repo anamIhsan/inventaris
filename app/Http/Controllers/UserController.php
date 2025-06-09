@@ -40,7 +40,7 @@ class UserController extends Controller
             'email'    => 'required|email|unique:users,email',
             'password' => 'required|min:6',
             'photo'    => 'required|image|mimes:jpg,jpeg,png|max:2048',
-            'level'    => ['required', Rule::in(['Administrator', 'Manajemen'])],
+            'level'    => ['required', Rule::in(['Administrator', 'Manajemen', 'User'])],
         ]);
 
         if ($validator->fails()) {
@@ -89,7 +89,7 @@ class UserController extends Controller
             'email'    => ['nullable', 'email', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|min:6',
             'photo'    => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'level'    => ['required', Rule::in(['Administrator', 'Manajemen'])],
+            'level'    => ['required', Rule::in(['Administrator', 'Manajemen', 'User'])],
         ]);
 
         if ($validator->fails()) {

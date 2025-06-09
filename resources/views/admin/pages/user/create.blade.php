@@ -47,6 +47,8 @@
                                             {{ old('level') == 'Administrator' ? 'selected' : '' }}>Administrator</option>
                                         <option value="Manajemen" {{ old('level') == 'Manajemen' ? 'selected' : '' }}>
                                             Manajemen</option>
+                                        <option value="User" {{ old('level') == 'User' ? 'selected' : '' }}>
+                                            User</option>
                                     </select>
                                 </div>
                             </div>

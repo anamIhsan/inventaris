@@ -2,26 +2,27 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Auth;
 use App\Models\Borrowing;
 use App\Models\Item;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
-class BorrowingController extends Controller
-{
+class BorrowingController extends Controller{
     public function index(Request $request){
-        $query = Borrowing::with('items');
+        $query = Borrowing::with(['items', 'users']);
 
         if ($request->has('search') && $request->search != '') {
             $keyword = $request->search;
-            $query->where('name', 'like', "%{$keyword}%")
-                ->orWhere('condition', 'like', "%{$keyword}%")
-                ->orWhere('status', 'like', "%{$keyword}%")
-                ->orWhere('borrowed_at', 'like', "%{$keyword}%")
-                ->orWhere('returned_at', 'like', "%{$keyword}%")
-                ->orWhereHas('items', function ($q) use ($keyword) {
-                    $q->where('name', 'like', "%{$keyword}%");
-                });
+            $query->whereHas('user', function ($q) use ($keyword) {
+                $q->where('name', 'like', "%{$keyword}%");
+            })->orWhere('condition', 'like', "%{$keyword}%")
+              ->orWhere('status', 'like', "%{$keyword}%")
+              ->orWhere('borrowed_at', 'like', "%{$keyword}%")
+              ->orWhere('returned_at', 'like', "%{$keyword}%")
+              ->orWhereHas('items', function ($q) use ($keyword) {
+                  $q->where('name', 'like', "%{$keyword}%");
+            });
         }
 
         $borrowings = $query->latest()->paginate(10);
@@ -36,23 +37,36 @@ class BorrowingController extends Controller
 
     public function store(Request $request){
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
             'item_id' => 'required|exists:items,id',
             'quantity' => 'required|integer|min:1',
             'borrowed_at' => 'required|date',
             'returned_at' => 'required|date|after_or_equal:borrowed_at',
             'condition' => 'required|string|max:100',
-            'status' => 'required|in:dipinjam,dikembalikan,overdue',
+            'status' => 'required|in:diminta,disetujui,ditolak,dipinjam,dikembalikan',
+            'catatan' => 'nullable|string'
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
+            return response()->json($validator->errors(), 422);
         }
 
         try {
-            Borrowing::create($request->only([
-                'name', 'item_id', 'quantity', 'borrowed_at', 'returned_at', 'condition', 'status'
-            ]));
+            $userId = $request->attributes->get('payload')->get('sub');
+
+            if (!$userId) {
+                return response()->json(['error' => 'Unauthorized'], 401);
+            }
+
+            Borrowing::create([
+                'user_id' => $userId,
+                'item_id' => $request->item_id,
+                'quantity' => $request->quantity,
+                'borrowed_at' => $request->borrowed_at,
+                'returned_at' => $request->returned_at,
+                'condition' => $request->condition,
+                'status' => $request->status,
+                'catatan' => $request->catatan,
+            ]);
 
             return redirect()->route('borrowing.index')->with('success', 'Data Peminjaman Berhasil Ditambah');
         } catch (\Throwable $th) {
@@ -70,13 +84,13 @@ class BorrowingController extends Controller
         $borrowing = Borrowing::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
             'item_id' => 'required|exists:items,id',
             'quantity' => 'required|integer|min:1',
             'borrowed_at' => 'required|date',
             'returned_at' => 'required|date|after_or_equal:borrowed_at',
             'condition' => 'required|string|max:100',
-            'status' => 'required|in:dipinjam,dikembalikan,overdue',
+            'status' => 'required|in:diminta,disetujui,ditolak,dipinjam,dikembalikan',
+            'catatan' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -85,13 +99,13 @@ class BorrowingController extends Controller
 
         try {
             $borrowing->update([
-                'name' => $request->name,
                 'item_id' => $request->item_id,
                 'quantity' => $request->quantity,
                 'borrowed_at' => $request->borrowed_at,
                 'returned_at' => $request->returned_at,
                 'condition' => $request->condition,
                 'status' => $request->status,
+                'catatan' => $request->catatan,
             ]);
 
             return redirect()->route('borrowing.index')->with('success', 'Data Peminjaman Berhasil Diubah');
@@ -111,20 +125,30 @@ class BorrowingController extends Controller
         }
     }
 
-    public function returnItem($id){
+    public function updateStatus(Request $request, $id){
         $borrowing = Borrowing::findOrFail($id);
 
+        $validStatuses = ['disetujui', 'ditolak', 'dipinjam', 'dikembalikan'];
+        $newStatus = $request->input('status');
+
+        if (!in_array($newStatus, $validStatuses)) {
+            return redirect()->back()->withErrors(['status' => 'Status tidak valid.']);
+        }
+
         try {
-            if ($borrowing->status === 'dikembalikan') {
+            if ($borrowing->status === 'dikembalikan' && $newStatus === 'dikembalikan') {
                 return redirect()->back()->withErrors(['status' => 'Barang sudah dikembalikan sebelumnya.']);
             }
 
-            $borrowing->update([
-                'status' => 'dikembalikan',
-                'returned_at' => now(),
-            ]);
+            $updateData = ['status' => $newStatus];
 
-            return redirect()->route('borrowing.index')->with('success', 'Barang berhasil dikembalikan');
+            if ($newStatus === 'dikembalikan') {
+                $updateData['returned_at'] = now();
+            }
+
+            $borrowing->update($updateData);
+
+            return redirect()->route('borrowing.index')->with('success', "Status berhasil diubah menjadi '$newStatus'.");
         } catch (\Throwable $th) {
             return redirect()->back()->withErrors($th->getMessage());
         }

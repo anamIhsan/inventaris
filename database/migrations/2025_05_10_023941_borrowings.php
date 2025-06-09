@@ -12,13 +12,14 @@ return new class extends Migration
     public function up(){
         Schema::create('borrowings', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 200);
+            $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('item_id');
             $table->integer('quantity');
             $table->date('borrowed_at');
             $table->date('returned_at');
             $table->string('condition', 100);
-            $table->enum('status', ['dipinjam', 'dikembalikan']);
+            $table->enum('status', ['diminta', 'disetujui', 'ditolak', 'dipinjam', 'dikembalikan'])->default('diminta');
+            $table->string('catatan', 200)->nullable();
             $table->timestamps();
         });
     }

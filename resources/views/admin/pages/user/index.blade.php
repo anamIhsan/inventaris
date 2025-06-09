@@ -54,8 +54,10 @@
                                             <td class="project-state">
                                                 @if ($item->level == 'Administrator')
                                                     <span class="badge badge-success">{{ $item->level }}</span>
-                                                @else
+                                                @elseif ($item->level == 'Manajemen')
                                                     <span class="badge badge-info">{{ $item->level }}</span>
+                                                @else
+                                                    <span class="badge badge-primary">{{ $item->level }}</span>
                                                 @endif
                                             </td>
                                             <td>
