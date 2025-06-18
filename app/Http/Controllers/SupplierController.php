@@ -50,7 +50,7 @@ class SupplierController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:suppliers,name',
             'phone' => 'required|string|max:20',
             'address' => 'required|string',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -122,7 +122,7 @@ class SupplierController extends Controller
         $supplier = Supplier::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:suppliers,name,' . $supplier->id,
             'phone' => 'required|string|max:20',
             'address' => 'required|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',

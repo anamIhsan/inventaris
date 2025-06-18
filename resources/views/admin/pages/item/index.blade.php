@@ -35,11 +35,11 @@
                                 <thead>
                                     <tr>
                                         <th>#</th>
+                                        <th>Kategori</th>
                                         <th>Nama</th>
-                                        <th>Spesifikasi</th>
-                                        <th>Lokasi</th>
                                         <th>Kondisi</th>
-                                        <th>Jenis Barang</th>
+                                        <th>Harga</th>
+                                        <th>Sumber Dana</th>
                                         <th>Stok</th>
                                         <th>Aksi</th>
                                     </tr>
@@ -48,11 +48,11 @@
                                     @forelse ($items as $item)
                                         <tr>
                                             <td>{{ $loop->iteration }}</td>
+                                            <td>{{ $item->categories->name }}</td>
                                             <td>{{ $item->name }}</td>
-                                            <td>{{ $item->specification }}</td>
-                                            <td>{{ $item->location }}</td>
                                             <td>{{ $item->condition }}</td>
-                                            <td>{{ $item->item_type }}</td>
+                                            <td>Rp {{ number_format($item->price, 0, ',', '.') }}</td>
+                                            <td>{{ $item->funding_source }}</td>
                                             <td>{{ $item->stok }}</td>
                                             <td>
                                                 <div class="d-flex">
@@ -77,7 +77,6 @@
                                                     </form>
                                                 </div>
                                             </td>
-
                                         </tr>
                                     @empty
                                         <tr>
@@ -120,36 +119,29 @@
                         <form>
                             <div class="row">
                                 <div class="col-md-6 mb-3 text-start">
-                                    <label class="form-label"><strong>Nama</strong></label>
-                                    <input type="text" class="form-control" value="${data.name}" disabled>
+                                    <label class="form-label"><strong>Kategori</strong></label>
+                                    <input type="text" class="form-control" value="${data.categories.name}" disabled>
                                 </div>
                                 <div class="col-md-6 mb-3 text-start">
-                                    <label class="form-label"><strong>Lokasi</strong></label>
-                                    <input type="text" class="form-control" value="${data.location}" disabled>
+                                    <label class="form-label"><strong>Nama</strong></label>
+                                    <input type="text" class="form-control" value="${data.name}" disabled>
                                 </div>
                                 <div class="col-md-6 mb-3 text-start">
                                     <label class="form-label"><strong>Kondisi</strong></label>
                                     <input type="text" class="form-control" value="${data.condition}" disabled>
                                 </div>
                                 <div class="col-md-6 mb-3 text-start">
-                                    <label class="form-label"><strong>Jumlah</strong></label>
-                                    <input type="number" class="form-control" value="${data.quantity}" disabled>
+                                    <label class="form-label"><strong>Harga</strong></label>
+                                    <input type="text" class="form-control" value="Rp ${Number(data.price).toLocaleString('id-ID')}" disabled>
                                 </div>
+
                                 <div class="col-md-6 mb-3 text-start">
                                     <label class="form-label"><strong>Sumber Dana</strong></label>
                                     <input type="text" class="form-control" value="${data.funding_source}" disabled>
                                 </div>
                                 <div class="col-md-6 mb-3 text-start">
-                                    <label class="form-label"><strong>Jenis Barang</strong></label>
-                                    <input type="text" class="form-control" value="${data.item_type}" disabled>
-                                </div>
-                                <div class="col-md-6 mb-3 text-start">
-                                    <label class="form-label"><strong>Spesifikasi</strong></label>
-                                    <textarea class="form-control" rows="2" disabled>${data.specification}</textarea>
-                                </div>
-                                <div class="col-md-6 mb-3 text-start">
                                     <label class="form-label"><strong>Deskripsi</strong></label>
-                                    <textarea class="form-control" rows="2" disabled>${data.description}</textarea>
+                                    <textarea class="form-control" rows="1" disabled>${data.description}</textarea>
                                 </div>
                                 <div class="col-md-12 mb-3 text-start">
                                     <label class="form-label"><strong>Gambar</strong></label><br>

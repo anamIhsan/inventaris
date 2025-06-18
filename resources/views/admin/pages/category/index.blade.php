@@ -1,7 +1,7 @@
 @extends('admin.template')
 
 @section('title')
-    Pengguna
+    Kategori
 @endsection
 
 @section('content')
@@ -11,18 +11,18 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">Data Pengguna</h3>
+                            <h3 class="card-title">Data Kategori</h3>
                         </div>
                         <div class="card-body">
                             <div class="d-flex justify-content-between mb-3">
-                                <a href="{{ route('user.form-create') }}" class="btn btn-primary">
+                                <a href="{{ route('category.form-create') }}" class="btn btn-primary">
                                     <i class="fas fa-plus"></i> Tambah
                                 </a>
 
-                                <form action="{{ route('user.index') }}" method="GET" class="form-inline">
+                                <form action="{{ route('category.index') }}" method="GET" class="form-inline">
                                     <div class="input-group">
                                         <input type="text" name="search" class="form-control"
-                                            placeholder="Cari Pengguna..." value="{{ request('search') }}">
+                                            placeholder="Cari Kategori..." value="{{ request('search') }}">
                                         <div class="input-group-append">
                                             <button class="btn btn-outline-secondary" type="submit">
                                                 <i class="fas fa-search"></i>
@@ -35,73 +35,39 @@
                                 <thead>
                                     <tr>
                                         <th>#</th>
-                                        <th>Foto</th>
                                         <th>Nama</th>
-                                        <th>Email</th>
-                                        <th>Level</th>
-                                        <th>Status</th>
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse ($users as $item)
+                                    @forelse ($categories as $item)
                                         <tr>
                                             <td>{{ $loop->iteration }}</td>
-                                            <td>
-                                                <img src="{{ Storage::url($item->photo) }}" width="75" height="75">
-                                            </td>
                                             <td>{{ $item->name }}</td>
-                                            <td>{{ $item->email }}</td>
-                                            <td class="project-state">
-                                                @if ($item->level == 'Administrator')
-                                                    <span class="">{{ $item->level }}</span>
-                                                @elseif ($item->level == 'Manajemen')
-                                                    <span class="">{{ $item->level }}</span>
-                                                @else
-                                                    <span class="">{{ $item->level }}</span>
-                                                @endif
-                                            </td>
                                             <td>
-                                                @if ($item->is_approved)
-                                                    <span class="badge bg-success">Disetujui</span>
-                                                @else
-                                                    <span class="badge bg-danger">Menunggu Persetujuan</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                <div class="d-flex gap-1">
+                                                <div class="d-flex">
                                                     <a class="btn btn-warning btn-sm mr-1"
-                                                        href="{{ route('user.form-update', ['id' => $item->id]) }}">
+                                                        href="{{ route('category.form-update', ['id' => $item->id]) }}">
                                                         <i class="fas fa-pencil-alt"></i> Ubah
                                                     </a>
 
                                                     <form id="delete-form-{{ $item->id }}"
-                                                        action="{{ route('user.delete', ['id' => $item->id]) }}"
-                                                        method="POST">
+                                                        action="{{ route('category.delete', ['id' => $item->id]) }}"
+                                                        method="post">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="button" class="btn btn-danger btn-sm mr-1"
+                                                        <button type="button" class="btn btn-danger btn-sm"
                                                             onclick="confirmDelete('delete-form-{{ $item->id }}')">
                                                             <i class="fas fa-trash"></i> Hapus
                                                         </button>
                                                     </form>
-
-                                                    @if (!$item->is_approved)
-                                                        <form action="{{ route('user.approve', ['id' => $item->id]) }}"
-                                                            method="POST">
-                                                            @csrf
-                                                            <button type="submit" class="btn btn-success btn-sm">
-                                                                <i class="fas fa-check-circle"></i> Setujui
-                                                            </button>
-                                                        </form>
-                                                    @endif
                                                 </div>
                                             </td>
 
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="6" class="text-center">Data Pengguna Tidak Tersedia.</td>
+                                            <td colspan="6" class="text-center">Data Kategori Tidak Tersedia.</td>
                                         </tr>
                                     @endforelse
                                 </tbody>

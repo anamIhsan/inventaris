@@ -9,10 +9,9 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
-    {
-        Schema::table('items', function (Blueprint $table) {
-            $table->dropColumn('quantity');
+    public function up(){
+        Schema::table('users', function (Blueprint $table) {
+            $table->boolean('is_approved')->default(false);
         });
     }
 
@@ -21,6 +20,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('items');
+        Schema::table('users', function (Blueprint $table) {
+            //
+        });
     }
 };

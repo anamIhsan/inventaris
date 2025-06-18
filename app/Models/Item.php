@@ -11,15 +11,13 @@ class Item extends Model
     protected $table = 'items';
 
     protected $fillable = [
+        'category_id',
         'name',
         'image',
-        'specification',
-        'location',
         'condition',
-        'quantity',
+        'price',
         'funding_source',
         'description',
-        'item_type',
     ];
 
     public function incomingItems()
@@ -35,5 +33,9 @@ class Item extends Model
     public function borrowings()
     {
         return $this->hasMany(Borrowing::class, 'item_id');
+    }
+
+    public function categories(){
+        return $this->belongsTo(Category::class, 'category_id');
     }
 }

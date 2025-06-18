@@ -130,6 +130,14 @@ class UserController extends Controller
         }
     }
 
+    public function approve($id){
+        $user = User::findOrFail($id);
+        $user->is_approved = true;
+        $user->save();
+
+        return redirect()->back()->with('success', 'User berhasil disetujui.');
+    }
+
     public function destroy($id)
     {
         $user = User::findOrFail($id);

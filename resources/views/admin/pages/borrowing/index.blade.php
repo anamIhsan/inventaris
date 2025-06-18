@@ -114,16 +114,14 @@
                                                                 {{ ucfirst($item->status) }}
                                                             </span>
                                                         </td>
-
                                                         <td>
                                                             <div class="d-flex flex-wrap align-items-center">
-
                                                                 {{-- Tombol Status --}}
                                                                 @php
                                                                     $statusButtons = [
                                                                         'diminta' => ['disetujui', 'ditolak'],
                                                                         'disetujui' => ['dipinjam'],
-                                                                        'dipinjam' => [], // Supaya tidak muncul tombol dikembalikan dua kali
+                                                                        'dipinjam' => [],
                                                                         'ditolak' => [],
                                                                         'dikembalikan' => [],
                                                                     ];
@@ -174,9 +172,12 @@
                                                                 {{-- Tombol Kembalikan --}}
                                                                 @if ($item->status === 'dipinjam')
                                                                     <form id="returnForm-{{ $item->id }}"
-                                                                        action="{{ route('borrowing.return', $item->id) }}"
+                                                                        action="{{ route('borrowing.update-status', $item->id) }}"
                                                                         method="POST" class="mr-1">
                                                                         @csrf
+                                                                        @method('PUT')
+                                                                        <input type="hidden" name="status"
+                                                                            value="dikembalikan">
                                                                         <button type="button"
                                                                             class="btn btn-success btn-sm"
                                                                             onclick="confirmReturn('returnForm-{{ $item->id }}')">
@@ -184,6 +185,7 @@
                                                                         </button>
                                                                     </form>
                                                                 @endif
+
 
                                                                 {{-- Tombol Hapus --}}
                                                                 @if ($showDelete)
@@ -201,10 +203,6 @@
 
                                                             </div>
                                                         </td>
-
-
-
-
                                                     </tr>
                                                 @empty
                                                     <tr>

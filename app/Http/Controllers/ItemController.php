@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Item;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -16,34 +17,36 @@ class ItemController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
-{
-    $query = Item::query();
+    public function index(Request $request){
+        $query = Item::query();
 
-    if ($request->has('search') && $request->search != '') {
-        $keyword = $request->search;
-        $query->where('name', 'like', "%{$keyword}%")
-              ->orWhere('location', 'like', "%{$keyword}%")
-              ->orWhere('item_type', 'like', "%{$keyword}%");
+        if ($request->has('search') && $request->search != '') {
+            $keyword = $request->search;
+
+            $query->where(function ($q) use ($keyword) {
+                $q->where('name', 'like', "%{$keyword}%")
+                ->orWhere('condition', 'like', "%{$keyword}%")
+                ->orWhereHas('categories', function ($q2) use ($keyword) {
+                    $q2->where('name', 'like', "%{$keyword}%");
+                });
+            });
+        }
+
+        // Ambil semua data tanpa pagination
+        $items = $query->latest()->get();
+
+        // Tambahkan field stok
+        $items->transform(function ($item) {
+            $item->stok = $item->incomingItems->sum('quantity')
+                        - $item->exitItems->sum('quantity')
+                        - $item->borrowings->where('status', 'dipinjam')->sum('quantity');
+
+            // untuk hasil perubahan fieldnya di return
+            return $item;
+        });
+
+        return view('admin.pages.item.index', compact('items'));
     }
-
-    // Ambil semua data tanpa pagination
-    $items = $query->latest()->get();
-
-    // Tambahkan field stok
-    $items->transform(function ($item) {
-        $item->stok = $item->incomingItems->sum('quantity')
-                    - $item->exitItems->sum('quantity')
-                    - $item->borrowings->where('status', 'dipinjam')->sum('quantity');
-
-        // untuk hasil perubahan fieldnya di return
-        return $item;
-    });
-
-    return view('admin.pages.item.index', compact('items'));
-}
-
-
 
     /**
      * Show the form for creating a new resource.
@@ -52,7 +55,8 @@ class ItemController extends Controller
      */
     public function create()
     {
-        return view('admin.pages.item.create');
+        $categories = Category::all();
+        return view('admin.pages.item.create', compact('categories'));
     }
 
     /**
@@ -64,14 +68,13 @@ class ItemController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:255',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'specification' => 'required|string',
-            'location' => 'required|string|max:255',
             'condition' => 'required|string|max:100',
+            'price' => 'required|string|max:255',
             'funding_source' => 'required|string|max:255',
             'description' => 'required|string',
-            'item_type' => 'required|string|max:100',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -82,13 +85,12 @@ class ItemController extends Controller
 
         try {
             $itemData = [
+                'category_id' => $request->category_id,
                 'name' => $request->name,
-                'specification' => $request->specification,
-                'location' => $request->location,
                 'condition' => $request->condition,
+                'price' => $request->price,
                 'funding_source' => $request->funding_source,
                 'description' => $request->description,
-                'item_type' => $request->item_type,
             ];
 
             // Handle item image upload if provided
@@ -109,18 +111,6 @@ class ItemController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        $item = Item::findOrFail($id);
-        return view('admin.pages.item.show', compact('item'));
-    }
-
-    /**
      * Show the form for editing the specified resource.
      *
      * @param  int  $id
@@ -129,7 +119,8 @@ class ItemController extends Controller
     public function edit($id)
     {
         $item = Item::findOrFail($id);
-        return view('admin.pages.item.edit', compact('item'));
+        $categories = Category::all();
+        return view('admin.pages.item.edit', compact('item', 'categories'));
     }
 
     /**
@@ -144,14 +135,13 @@ class ItemController extends Controller
         $item = Item::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
+            'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:255',
-            'specification' => 'required|string',
-            'location' => 'required|string|max:255',
             'condition' => 'required|string|max:100',
+            'price' => 'required|string|max:255',
             'funding_source' => 'required|string|max:255',
             'description' => 'required|string',
-            'item_type' => 'required|string|max:100',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -162,13 +152,12 @@ class ItemController extends Controller
 
         try {
             $updateData = [
+                'category_id' => $request->category_id,
                 'name' => $request->name,
-                'specification' => $request->specification,
-                'location' => $request->location,
                 'condition' => $request->condition,
+                'price' => $request->price,
                 'funding_source' => $request->funding_source,
                 'description' => $request->description,
-                'item_type' => $request->item_type,
             ];
 
             // Handle item image upload if new file is provided

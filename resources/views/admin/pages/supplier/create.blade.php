@@ -31,10 +31,12 @@
                                     <textarea name="address" class="form-control" id="addressInput" placeholder="Masukan Alamat..." rows="5">{{ old('address') }}</textarea>
                                 </div>
                                 <div class="form-group">
-                                    <label for="imageInput" class="form-label">Gambar</label>
+                                    <label for="imageInput" class="form-label">Foto Legalitas</label>
                                     <input name="image" type="file" accept="image/*" class="form-control"
                                         id="imageInput">
+                                    <small class="form-text text-muted">Silakan unggah salah satu (NIB, NPWP, KTP).</small>
                                 </div>
+
                             </div>
                             <div class="card-footer">
                                 <button type="submit" class="btn btn-primary">Kirim</button>

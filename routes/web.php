@@ -2,10 +2,12 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BorrowingController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExitItemController;
 use App\Http\Controllers\IncomingItemController;
 use App\Http\Controllers\ItemController;
+use App\Http\Controllers\StokController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -21,10 +23,10 @@ Route::middleware('checkAuth')->group(function () {
         Route::get('/edit/{id}', [BorrowingController::class, 'edit'])->name('form-update');
         Route::put('/update/{id}', [BorrowingController::class, 'update'])->name('update');
         Route::put('/status/{id}', [BorrowingController::class, 'updateStatus'])->name('update-status');
-
-        Route::post('/return/{id}', [BorrowingController::class, 'returnItem'])->name('return');
         Route::delete('/destroy/{id}', [BorrowingController::class, 'destroy'])->name('delete');
     });
+
+    Route::get('/stok', [StokController::class, 'index'])->name('stok.index');
 
     Route::middleware('checkManajemen')->group(function () {
         Route::prefix('supplier')->as('supplier.')->group(function () {
@@ -77,8 +79,18 @@ Route::middleware('checkAuth')->group(function () {
             Route::post('/store', [UserController::class, 'store'])->name('create');
             Route::get('/edit/{id}', [UserController::class, 'edit'])->name('form-update');
             Route::put('/update/{id}', [UserController::class, 'update'])->name('update');
-            Route::post('/return/{id}', [UserController::class, 'returnItem'])->name('return');
             Route::delete('/destroy/{id}', [UserController::class, 'destroy'])->name('delete');
+            Route::post('/approve/{id}', [UserController::class, 'approve'])->name('approve');
+        });
+
+        Route::prefix('category')->as('category.')->group(function () {
+            Route::get('/', [CategoryController::class, 'index'])->name('index');
+
+            Route::get('/create', [CategoryController::class, 'create'])->name('form-create');
+            Route::post('/store', [CategoryController::class, 'store'])->name('create');
+            Route::get('/edit/{id}', [CategoryController::class, 'edit'])->name('form-update');
+            Route::put('/update/{id}', [CategoryController::class, 'update'])->name('update');
+            Route::delete('/destroy/{id}', [CategoryController::class, 'destroy'])->name('delete');
         });
     });
 });

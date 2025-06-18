@@ -29,10 +29,15 @@ class AuthController extends Controller
             return redirect()->back()->withErrors('Gagal! Email dan Password tidak sesuai');
         }
 
+        // Cek apakah user disetujui
+        $user = Auth::user();
+        if (!$user->is_approved) {
+            Auth::logout(); // Logout paksa
+            return redirect()->back()->withErrors('Akun Anda belum disetujui oleh admin.');
+        }
+
         session(['jwt'=>$token]);
 
-        // $decoded =JWTAuth::setToken($token)->getPayload();
-        // dd($decoded->toArray());
         return redirect()->route('dashboard.index')->with('success', 'Login Berhasil');
     }
 
