@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExitItemController;
 use App\Http\Controllers\IncomingItemController;
 use App\Http\Controllers\ItemController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StokController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
@@ -26,9 +27,44 @@ Route::middleware('checkAuth')->group(function () {
         Route::delete('/destroy/{id}', [BorrowingController::class, 'destroy'])->name('delete');
     });
 
-    Route::get('/stok', [StokController::class, 'index'])->name('stok.index');
+    Route::prefix('borrowing')->as('borrowing.')->group(function () {
+        Route::get('/', [BorrowingController::class, 'index'])->name('index');
+
+        Route::middleware('checkUser')->group(function () {
+            Route::get('/create', [BorrowingController::class, 'create'])->name('form-create');
+            Route::post('/store', [BorrowingController::class, 'store'])->name('create');
+        });
+
+        Route::middleware('checkAdmin')->group(function () {
+            Route::get('/edit/{id}', [BorrowingController::class, 'edit'])->name('form-update');
+            Route::put('/update/{id}', [BorrowingController::class, 'update'])->name('update');
+            Route::put('/status/{id}', [BorrowingController::class, 'updateStatus'])->name('update-status');
+            Route::delete('/destroy/{id}', [BorrowingController::class, 'destroy'])->name('delete');
+        });
+    });
 
     Route::middleware('checkManajemen')->group(function () {
+        Route::get('/stok', [StokController::class, 'index'])->name('stok.index');
+
+        Route::prefix('report')->as('report.')->group(function () {
+            Route::get('/', [ReportController::class, 'index'])->name('index');
+            Route::post('/filter', [ReportController::class, 'filter'])->name('filter');
+            Route::post('/export-pdf', [ReportController::class, 'exportPdf'])->name('export-pdf');
+        });
+    });
+
+    Route::middleware('checkAdmin')->group(function () {
+        Route::prefix('user')->as('user.')->group(function () {
+            Route::get('/', [UserController::class, 'index'])->name('index');
+
+            Route::get('/create', [UserController::class, 'create'])->name('form-create');
+            Route::post('/store', [UserController::class, 'store'])->name('create');
+            Route::get('/edit/{id}', [UserController::class, 'edit'])->name('form-update');
+            Route::put('/update/{id}', [UserController::class, 'update'])->name('update');
+            Route::delete('/destroy/{id}', [UserController::class, 'destroy'])->name('delete');
+            Route::post('/approve/{id}', [UserController::class, 'approve'])->name('approve');
+        });
+
         Route::prefix('supplier')->as('supplier.')->group(function () {
             Route::get('/', [SupplierController::class, 'index'])->name('index');
 
@@ -39,14 +75,14 @@ Route::middleware('checkAuth')->group(function () {
             Route::delete('/destroy/{id}', [SupplierController::class, 'destroy'])->name('delete');
         });
 
-        Route::prefix('item')->as('item.')->group(function () {
-            Route::get('/', [ItemController::class, 'index'])->name('index');
+        Route::prefix('category')->as('category.')->group(function () {
+            Route::get('/', [CategoryController::class, 'index'])->name('index');
 
-            Route::get('/create', [ItemController::class, 'create'])->name('form-create');
-            Route::post('/store', [ItemController::class, 'store'])->name('create');
-            Route::get('/edit/{id}', [ItemController::class, 'edit'])->name('form-update');
-            Route::put('/update/{id}', [ItemController::class, 'update'])->name('update');
-            Route::delete('/destroy/{id}', [ItemController::class, 'destroy'])->name('delete');
+            Route::get('/create', [CategoryController::class, 'create'])->name('form-create');
+            Route::post('/store', [CategoryController::class, 'store'])->name('create');
+            Route::get('/edit/{id}', [CategoryController::class, 'edit'])->name('form-update');
+            Route::put('/update/{id}', [CategoryController::class, 'update'])->name('update');
+            Route::delete('/destroy/{id}', [CategoryController::class, 'destroy'])->name('delete');
         });
 
         Route::prefix('incoming-item')->as('incoming-item.')->group(function () {
@@ -69,28 +105,14 @@ Route::middleware('checkAuth')->group(function () {
             Route::delete('/destroy/{id}', [ExitItemController::class, 'destroy'])->name('delete');
         });
 
-    });
+        Route::prefix('item')->as('item.')->group(function () {
+            Route::get('/', [ItemController::class, 'index'])->name('index');
 
-    Route::middleware('checkAdmin')->group(function () {
-        Route::prefix('user')->as('user.')->group(function () {
-            Route::get('/', [UserController::class, 'index'])->name('index');
-
-            Route::get('/create', [UserController::class, 'create'])->name('form-create');
-            Route::post('/store', [UserController::class, 'store'])->name('create');
-            Route::get('/edit/{id}', [UserController::class, 'edit'])->name('form-update');
-            Route::put('/update/{id}', [UserController::class, 'update'])->name('update');
-            Route::delete('/destroy/{id}', [UserController::class, 'destroy'])->name('delete');
-            Route::post('/approve/{id}', [UserController::class, 'approve'])->name('approve');
-        });
-
-        Route::prefix('category')->as('category.')->group(function () {
-            Route::get('/', [CategoryController::class, 'index'])->name('index');
-
-            Route::get('/create', [CategoryController::class, 'create'])->name('form-create');
-            Route::post('/store', [CategoryController::class, 'store'])->name('create');
-            Route::get('/edit/{id}', [CategoryController::class, 'edit'])->name('form-update');
-            Route::put('/update/{id}', [CategoryController::class, 'update'])->name('update');
-            Route::delete('/destroy/{id}', [CategoryController::class, 'destroy'])->name('delete');
+            Route::get('/create', [ItemController::class, 'create'])->name('form-create');
+            Route::post('/store', [ItemController::class, 'store'])->name('create');
+            Route::get('/edit/{id}', [ItemController::class, 'edit'])->name('form-update');
+            Route::put('/update/{id}', [ItemController::class, 'update'])->name('update');
+            Route::delete('/destroy/{id}', [ItemController::class, 'destroy'])->name('delete');
         });
     });
 });

@@ -44,9 +44,11 @@
 
                         <div class="card-body">
                             <div class="d-flex justify-content-between mb-3">
-                                <a href="{{ route('borrowing.form-create') }}" class="btn btn-primary">
-                                    <i class="fas fa-plus"></i> Tambah
-                                </a>
+                                @if ($payload->get('level') === 'User')
+                                    <a href="{{ route('borrowing.form-create') }}" class="btn btn-primary">
+                                        <i class="fas fa-plus"></i> Tambah
+                                    </a>
+                                @endif
 
                                 <form action="{{ route('borrowing.index') }}" method="GET" class="form-inline">
                                     <div class="input-group">
@@ -77,7 +79,9 @@
                                                     <th>Tgl.Pinjam</th>
                                                     <th>Tgl.Kembali</th>
                                                     <th>Status</th>
-                                                    <th>Aksi</th>
+                                                    @if ($payload->get('level') === 'Administrator')
+                                                        <th>Aksi</th>
+                                                    @endif
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -95,8 +99,10 @@
                                                         <td>{{ $item->items->name }}</td>
                                                         <td>{{ $item->quantity }}</td>
                                                         <td>{{ $item->condition }}</td>
-                                                        <td>{{ $item->borrowed_at }}</td>
-                                                        <td>{{ $item->returned_at }}</td>
+                                                        <td>{{ \Carbon\Carbon::parse($item->borrowed_at)->format('d M Y') }}
+                                                        </td>
+                                                        <td>{{ \Carbon\Carbon::parse($item->returned_at)->format('d M Y') }}
+                                                        </td>
                                                         <td class="project-state">
                                                             <span
                                                                 class="badge
@@ -114,95 +120,98 @@
                                                                 {{ ucfirst($item->status) }}
                                                             </span>
                                                         </td>
-                                                        <td>
-                                                            <div class="d-flex flex-wrap align-items-center">
-                                                                {{-- Tombol Status --}}
-                                                                @php
-                                                                    $statusButtons = [
-                                                                        'diminta' => ['disetujui', 'ditolak'],
-                                                                        'disetujui' => ['dipinjam'],
-                                                                        'dipinjam' => [],
-                                                                        'ditolak' => [],
-                                                                        'dikembalikan' => [],
-                                                                    ];
+                                                        @if ($payload->get('level') === 'Administrator')
+                                                            <td>
+                                                                <div class="d-flex flex-wrap align-items-center">
+                                                                    {{-- Tombol Status --}}
+                                                                    @php
+                                                                        $statusButtons = [
+                                                                            'diminta' => ['disetujui', 'ditolak'],
+                                                                            'disetujui' => ['dipinjam'],
+                                                                            'dipinjam' => [],
+                                                                            'ditolak' => [],
+                                                                            'dikembalikan' => [],
+                                                                        ];
 
-                                                                    $showEdit = in_array($item->status, [
-                                                                        'diminta',
-                                                                        'disetujui',
-                                                                    ]);
-                                                                    $showDelete = in_array($item->status, [
-                                                                        'diminta',
-                                                                        'disetujui',
-                                                                        'ditolak',
-                                                                        'dikembalikan',
-                                                                    ]);
-                                                                @endphp
+                                                                        $showEdit = in_array($item->status, [
+                                                                            'diminta',
+                                                                            'disetujui',
+                                                                        ]);
+                                                                        $showDelete = in_array($item->status, [
+                                                                            'diminta',
+                                                                            'disetujui',
+                                                                            'ditolak',
+                                                                            'dikembalikan',
+                                                                        ]);
+                                                                    @endphp
 
-                                                                {{-- Tombol Ubah --}}
-                                                                @if ($showEdit)
-                                                                    <a class="btn btn-warning btn-sm mr-1"
-                                                                        href="{{ route('borrowing.form-update', ['id' => $item->id]) }}">
-                                                                        <i class="fas fa-pencil-alt"></i> Ubah
-                                                                    </a>
-                                                                @endif
+                                                                    {{-- Tombol Ubah --}}
+                                                                    @if ($showEdit)
+                                                                        <a class="btn btn-warning btn-sm mr-1"
+                                                                            href="{{ route('borrowing.form-update', ['id' => $item->id]) }}">
+                                                                            <i class="fas fa-pencil-alt"></i> Ubah
+                                                                        </a>
+                                                                    @endif
 
-                                                                {{-- Tombol Status Dinamis --}}
-                                                                @foreach ($statusButtons[$item->status] ?? [] as $status)
-                                                                    <form
-                                                                        action="{{ route('borrowing.update-status', $item->id) }}"
-                                                                        method="POST" class="mr-1">
-                                                                        @csrf
-                                                                        @method('PUT')
-                                                                        <input type="hidden" name="status"
-                                                                            value="{{ $status }}">
-                                                                        <button type="submit"
-                                                                            class="btn btn-sm
-                                                                                {{ $status === 'disetujui'
-                                                                                    ? 'btn-success'
-                                                                                    : ($status === 'ditolak'
-                                                                                        ? 'btn-danger'
-                                                                                        : ($status === 'dipinjam'
-                                                                                            ? 'btn-warning'
-                                                                                            : 'btn-secondary')) }}">
-                                                                            {{ ucfirst($status) }}
-                                                                        </button>
-                                                                    </form>
-                                                                @endforeach
+                                                                    {{-- Tombol Status Dinamis --}}
+                                                                    @foreach ($statusButtons[$item->status] ?? [] as $status)
+                                                                        <form
+                                                                            action="{{ route('borrowing.update-status', $item->id) }}"
+                                                                            method="POST" class="mr-1">
+                                                                            @csrf
+                                                                            @method('PUT')
+                                                                            <input type="hidden" name="status"
+                                                                                value="{{ $status }}">
+                                                                            <button type="submit"
+                                                                                class="btn btn-sm
+                                                                            {{ $status === 'disetujui'
+                                                                                ? 'btn-success'
+                                                                                : ($status === 'ditolak'
+                                                                                    ? 'btn-danger'
+                                                                                    : ($status === 'dipinjam'
+                                                                                        ? 'btn-warning'
+                                                                                        : 'btn-secondary')) }}">
+                                                                                {{ ucfirst($status) }}
+                                                                            </button>
+                                                                        </form>
+                                                                    @endforeach
 
-                                                                {{-- Tombol Kembalikan --}}
-                                                                @if ($item->status === 'dipinjam')
-                                                                    <form id="returnForm-{{ $item->id }}"
-                                                                        action="{{ route('borrowing.update-status', $item->id) }}"
-                                                                        method="POST" class="mr-1">
-                                                                        @csrf
-                                                                        @method('PUT')
-                                                                        <input type="hidden" name="status"
-                                                                            value="dikembalikan">
-                                                                        <button type="button"
-                                                                            class="btn btn-success btn-sm"
-                                                                            onclick="confirmReturn('returnForm-{{ $item->id }}')">
-                                                                            <i class="fas fa-undo"></i> Kembalikan
-                                                                        </button>
-                                                                    </form>
-                                                                @endif
+                                                                    {{-- Tombol Kembalikan --}}
+                                                                    @if ($item->status === 'dipinjam')
+                                                                        <form id="returnForm-{{ $item->id }}"
+                                                                            action="{{ route('borrowing.update-status', $item->id) }}"
+                                                                            method="POST" class="mr-1">
+                                                                            @csrf
+                                                                            @method('PUT')
+                                                                            <input type="hidden" name="status"
+                                                                                value="dikembalikan">
+                                                                            <button type="button"
+                                                                                class="btn btn-success btn-sm"
+                                                                                onclick="confirmReturn('returnForm-{{ $item->id }}')">
+                                                                                <i class="fas fa-undo"></i> Kembalikan
+                                                                            </button>
+                                                                        </form>
+                                                                    @endif
 
 
-                                                                {{-- Tombol Hapus --}}
-                                                                @if ($showDelete)
-                                                                    <form id="delete-form-{{ $item->id }}"
-                                                                        action="{{ route('borrowing.delete', ['id' => $item->id]) }}"
-                                                                        method="POST" class="mr-1">
-                                                                        @csrf
-                                                                        @method('DELETE')
-                                                                        <button type="button" class="btn btn-danger btn-sm"
-                                                                            onclick="confirmDelete('delete-form-{{ $item->id }}')">
-                                                                            <i class="fas fa-trash"></i> Hapus
-                                                                        </button>
-                                                                    </form>
-                                                                @endif
+                                                                    {{-- Tombol Hapus --}}
+                                                                    @if ($showDelete)
+                                                                        <form id="delete-form-{{ $item->id }}"
+                                                                            action="{{ route('borrowing.delete', ['id' => $item->id]) }}"
+                                                                            method="POST" class="mr-1">
+                                                                            @csrf
+                                                                            @method('DELETE')
+                                                                            <button type="button"
+                                                                                class="btn btn-danger btn-sm"
+                                                                                onclick="confirmDelete('delete-form-{{ $item->id }}')">
+                                                                                <i class="fas fa-trash"></i> Hapus
+                                                                            </button>
+                                                                        </form>
+                                                                    @endif
 
-                                                            </div>
-                                                        </td>
+                                                                </div>
+                                                            </td>
+                                                        @endif
                                                     </tr>
                                                 @empty
                                                     <tr>

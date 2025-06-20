@@ -21,9 +21,18 @@
                                     <select name="item_id" class="form-control" id="itemIdInput">
                                         <option value="">-- Pilih Barang --</option>
                                         @foreach ($items as $item)
+                                            @php
+                                                $stok =
+                                                    $item->incomingItems->sum('quantity') -
+                                                    $item->exitItems->sum('quantity') -
+                                                    $item->borrowings->where('status', 'dipinjam')->sum('quantity');
+                                            @endphp
                                             <option value="{{ $item->id }}"
-                                                {{ old('item_id') == $item->id ? 'selected' : '' }}>
+                                                {{ old('item_id') == $item->id ? 'selected' : '' }}
+                                                {{ $stok <= $item->minimum_stock ? 'disabled' : '' }}>
                                                 {{ $item->name }}
+                                                {{ $stok <= $item->minimum_stock ? '(Stok Rendah)' : '' }}
+                                                - Stok: {{ $stok }}
                                             </option>
                                         @endforeach
                                     </select>

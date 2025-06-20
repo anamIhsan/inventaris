@@ -35,7 +35,9 @@ class StokController extends Controller
                         - $item->exitItems->sum('quantity')
                         - $item->borrowings->where('status', 'dipinjam')->sum('quantity');
 
-            // untuk hasil perubahan fieldnya di return
+            // Tambahkan warning jika stok di bawah batas
+            $item->stok_warning = $item->stok <= $item->minimum_stock;
+
             return $item;
         });
 

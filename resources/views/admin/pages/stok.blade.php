@@ -15,7 +15,7 @@
                         </div>
                         <div class="card-body">
                             <div class="d-flex justify-content-between mb-3">
-                                <form action="{{ route('item.index') }}" method="GET" class="form-inline">
+                                <form action="{{ route('stok.index') }}" method="GET" class="form-inline">
                                     <div class="input-group">
                                         <input type="text" name="search" class="form-control" placeholder="Cari Stok..."
                                             value="{{ request('search') }}">
@@ -34,6 +34,7 @@
                                         <th>Kategori</th>
                                         <th>Nama</th>
                                         <th>Stok</th>
+                                        <th>Minimal Stok</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -42,7 +43,14 @@
                                             <td>{{ $loop->iteration }}</td>
                                             <td>{{ $item->categories->name }}</td>
                                             <td>{{ $item->name }}</td>
-                                            <td>{{ $item->stok }}</td>
+                                            <td>
+                                                {{ $item->stok }}
+                                                @if ($item->stok_warning)
+                                                    <span class="badge bg-danger">Stok Rendah</span>
+                                                @endif
+                                            </td>
+
+                                            <td>{{ $item->minimum_stock }}</td>
                                         </tr>
                                     @empty
                                         <tr>

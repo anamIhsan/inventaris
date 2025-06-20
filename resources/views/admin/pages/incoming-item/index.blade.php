@@ -47,7 +47,8 @@
                                         <tr>
                                             <td>{{ $loop->iteration }}</td>
                                             <td>{{ $item->items->name }}</td>
-                                            <td>{{ $item->entry_date }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($item->entry_date)->format('d M Y') }}
+                                            </td>
                                             <td>{{ $item->quantity }}</td>
                                             <td>{{ $item->suppliers->name }}</td>
                                             <td>

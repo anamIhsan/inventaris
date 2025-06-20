@@ -7,31 +7,52 @@ use App\Models\Borrowing;
 use App\Models\Item;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Session;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class BorrowingController extends Controller{
-    public function index(Request $request){
+    public function index(Request $request)
+    {
+        $token = Session::get('jwt');
+        $payload = JWTAuth::setToken($token)->getPayload();
+
+        $userId = $payload->get('sub');
+        $level = $payload->get('level');
+
         $query = Borrowing::with(['items', 'users']);
 
+        // Filter: Jika user biasa, tampilkan hanya miliknya
+        if ($level === 'User') {
+            $query->where('user_id', $userId);
+        }
+
+        // Filter pencarian
         if ($request->has('search') && $request->search != '') {
             $keyword = $request->search;
-            $query->whereHas('user', function ($q) use ($keyword) {
-                $q->where('name', 'like', "%{$keyword}%");
-            })->orWhere('condition', 'like', "%{$keyword}%")
-              ->orWhere('status', 'like', "%{$keyword}%")
-              ->orWhere('borrowed_at', 'like', "%{$keyword}%")
-              ->orWhere('returned_at', 'like', "%{$keyword}%")
-              ->orWhereHas('items', function ($q) use ($keyword) {
-                  $q->where('name', 'like', "%{$keyword}%");
+            $query->where(function ($q) use ($keyword) {
+                $q->whereHas('users', function ($q2) use ($keyword) {
+                    $q2->where('name', 'like', "%{$keyword}%");
+                })
+                ->orWhere('condition', 'like', "%{$keyword}%")
+                ->orWhere('status', 'like', "%{$keyword}%")
+                ->orWhere('borrowed_at', 'like', "%{$keyword}%")
+                ->orWhere('returned_at', 'like', "%{$keyword}%")
+                ->orWhereHas('items', function ($q3) use ($keyword) {
+                    $q3->where('name', 'like', "%{$keyword}%");
+                });
             });
         }
 
         $borrowings = $query->latest()->paginate(10);
 
-        return view('admin.pages.borrowing.index', compact('borrowings'));
+        return view('admin.pages.borrowing.index', [
+            'borrowings' => $borrowings,
+            'payload' => $payload
+        ]);
     }
 
     public function create(){
-        $items = Item::all();
+        $items = Item::with(['incomingItems', 'exitItems', 'borrowings'])->get();
         return view('admin.pages.borrowing.create', compact('items'));
     }
 
